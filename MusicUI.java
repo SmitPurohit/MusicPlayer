@@ -13,13 +13,14 @@ public class MusicUI implements ItemListener
       
       
       
-      button = new JToggleButton("ON");  
+      button = new JToggleButton("PLAY");  
       button.addItemListener(new ItemListener() {
    public void itemStateChanged(ItemEvent ev) {
       if(ev.getStateChange()==ItemEvent.SELECTED){
-        player.nextSong();
+        player.play = true;
+         
       } else if(ev.getStateChange()==ItemEvent.DESELECTED){
-        
+        player.play = false;
       }
    }
 });

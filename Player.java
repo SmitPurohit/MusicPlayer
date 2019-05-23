@@ -23,22 +23,26 @@ public class Player extends JPanel implements KeyListener, ActionListener, Focus
    int songIndex;
    public boolean shuffle = false; //shuffle the songs?
    JToggleButton button;
-   
+   JFrame f;
+   public boolean play = false;
    public Player(JToggleButton button)
    {
+      
       this.button = button;
-      button.addItemListener(new ItemListener() {
-   public void itemStateChanged(ItemEvent ev) {
-      if(ev.getStateChange()==ItemEvent.SELECTED){
-        skip = true;
-      } else if(ev.getStateChange()==ItemEvent.DESELECTED){
-        
-      }
-   }
-});
+      button.addItemListener(
+         new ItemListener() {
+            public void itemStateChanged(ItemEvent ev) {
+               if(ev.getStateChange()==ItemEvent.SELECTED){
+                  skip = true;
+               } else if(ev.getStateChange()==ItemEvent.DESELECTED){
+               
+               }
+            }
+         });
       addKeyListener(this);
-       setFocusable(true);
+      setFocusable(true);
       setFocusTraversalKeysEnabled(false);
+      f = new JFrame("");
       songIndex = 0;
       JFXPanel pp = new JFXPanel();
       File dir = new File(System.getProperty("user.dir"));
@@ -68,27 +72,38 @@ public class Player extends JPanel implements KeyListener, ActionListener, Focus
    public void playSong()
    {
       //if there is no shuffle
-      int current = (int)(System.currentTimeMillis()/1000);
+      int current;
+      int count = 0;
       if(!shuffle)
       {
+         current = (int)(System.currentTimeMillis()/1000);
          String song = songList.get(songIndex);
          System.out.println(song);
          hit = new Media(new File(song).toURI().toString());
          mediaPlayer = new MediaPlayer(hit);
-         mediaPlayer.play();
+         
          while(songGoingOn(current, song))//doesnt do anything until the song is done
          {
+            if(count == 0)
+               mediaPlayer.play();
+            count = 1;
             if(skip)
             {
                skip = false;
+               
                break;
-               }
+            }
+           
+            
          }
          nextSong();
+         
       
       }
       //if shuffle is on
       else{
+         current = (int)(System.currentTimeMillis()/1000);
+      
          songIndex = (int)(Math.random()*songList.size());
          String song = songList.get(songIndex);
          hit = new Media(new File(song).toURI().toString());
@@ -97,16 +112,25 @@ public class Player extends JPanel implements KeyListener, ActionListener, Focus
          while(songGoingOn(current, song))//doesnt do anything until the song is done
          {
             if(skip)
+            {
+               button = new JToggleButton("ON");  
                break;
+            }
          }
          
       }
+      
+      
+      
    }
 
    public boolean songGoingOn(int current, String song)
    {
       int duration = 3;
-   
+      if(!play)
+      {
+         while(!play){System.out.println(play);}
+      }
       try {
          AudioFile audioFile = AudioFileIO.read(new File(song));
          duration += audioFile.getAudioHeader().getTrackLength();
@@ -125,48 +149,51 @@ public class Player extends JPanel implements KeyListener, ActionListener, Focus
    }
    public void nextSong()
    {
+      f.getContentPane().remove(button);
+      button = new JToggleButton("ON");  
+      f.add(button);
       mediaPlayer.stop();
-         songIndex++;
-         
-         if(songIndex>=songList.size())
-            songIndex = 0;
+      songIndex++;
+      button.setEnabled(false);
+      if(songIndex>=songList.size())
+         songIndex = 0;
       this.playSong();
    }
    
    @Override
    public void actionPerformed(ActionEvent e){  
-            this.nextSong();
-        } 
+            //this.nextSong();
+   } 
    
    @Override
    public void keyTyped(KeyEvent e){
-    int keyCode = e.getKeyCode();
+      int keyCode = e.getKeyCode();
       if(keyCode == KeyEvent.VK_LEFT)
-         {
+      {
        
-        skip = true;
-        System.out.println(skip);
-    }}
+         skip = true;
+         System.out.println(skip);
+      }}
     
-    @Override
+   @Override
     public void keyPressed(KeyEvent e){
-    if(e.getKeyCode() == KeyEvent.VK_S)
-       {
-        skip = true;
-        System.out.println(skip);
-        mediaPlayer.stop();
+      if(e.getKeyCode() == KeyEvent.VK_S)
+      {
+         skip = true;
+         System.out.println(skip);
+         mediaPlayer.stop();
          songIndex++;
-    }
-    }
+      }
+   }
     
-    @Override
+   @Override
     public void keyReleased(KeyEvent e){
-    if(e.getKeyCode() == KeyEvent.VK_S)
-       {
-        skip = false;
-        System.out.println("Skip: " + skip);
-    }}
-    @Override
+      if(e.getKeyCode() == KeyEvent.VK_S)
+      {
+         skip = false;
+         System.out.println("Skip: " + skip);
+      }}
+   @Override
    public void focusGained(FocusEvent e){}
    
    @Override
