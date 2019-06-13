@@ -23,19 +23,29 @@ public class Player extends JPanel implements KeyListener, ActionListener, Focus
    int songIndex;
    public boolean shuffle = false; //shuffle the songs?
    JToggleButton button;
+   JButton b;
    JFrame f;
    public boolean play = false;
-   public Player(JToggleButton button)
+   int count = 0;
+   public Player(JToggleButton button, JButton skipButton)
    {
-      
+      b = skipButton;
+      b.addActionListener(
+         new ActionListener(){  
+            public void actionPerformed(ActionEvent e){  
+               skip = true;  
+            }  
+         });  
       this.button = button;
       button.addItemListener(
          new ItemListener() {
             public void itemStateChanged(ItemEvent ev) {
                if(ev.getStateChange()==ItemEvent.SELECTED){
-                  skip = true;
+                  play = true;
+                  button.setText("Pause");
                } else if(ev.getStateChange()==ItemEvent.DESELECTED){
-               
+                  play = false;
+                  button.setText("Play");
                }
             }
          });
@@ -69,11 +79,11 @@ public class Player extends JPanel implements KeyListener, ActionListener, Focus
    
    }
    
-   public void playSong()
+   public void playSong(int c)
    {
       //if there is no shuffle
       int current;
-      int count = 0;
+      count = c;
       if(!shuffle)
       {
          current = (int)(System.currentTimeMillis()/1000);
@@ -87,9 +97,11 @@ public class Player extends JPanel implements KeyListener, ActionListener, Focus
             if(count == 0)
                mediaPlayer.play();
             count = 1;
+            
             if(skip)
             {
                skip = false;
+               System.out.println("Works");
                
                break;
             }
@@ -127,10 +139,9 @@ public class Player extends JPanel implements KeyListener, ActionListener, Focus
    public boolean songGoingOn(int current, String song)
    {
       int duration = 3;
-      if(!play)
-      {
-         while(!play){System.out.println(play);}
-      }
+      
+      while(!play){System.out.println(skip); mediaPlayer.pause(); count = 0;}
+      
       try {
          AudioFile audioFile = AudioFileIO.read(new File(song));
          duration += audioFile.getAudioHeader().getTrackLength();
@@ -145,19 +156,23 @@ public class Player extends JPanel implements KeyListener, ActionListener, Focus
       
       System.out.println(newCurrent-current);
       
+      
       return (newCurrent-current)<=duration;
    }
    public void nextSong()
    {
-      f.getContentPane().remove(button);
+      
+      
+            
       button = new JToggleButton("ON");  
-      f.add(button);
+     
+      
       mediaPlayer.stop();
       songIndex++;
-      button.setEnabled(false);
+     // button.setEnabled(false);
       if(songIndex>=songList.size())
          songIndex = 0;
-      this.playSong();
+      this.playSong(0);
    }
    
    @Override
